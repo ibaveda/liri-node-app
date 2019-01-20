@@ -21,7 +21,8 @@
     "dotenv": "^6.2.0",
     "moment": "^2.23.0",
     "node-spotify-api": "^1.0.7",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "require": "^2.4.20"
   },
   "devDependencies": {}
 }
