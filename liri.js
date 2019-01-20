@@ -11,6 +11,8 @@ var request = require('request');
 
 var fs = require("fs");
 
+var moment = require('moment')
+
 
 //LIRI will search Spotify for song/artists - music data
  
@@ -25,17 +27,17 @@ function spotifyQuery() {
 		comboTerm += process.argv[i] + " ";
 	}
 
-	if (process.argv[2] == "spotify-this-song" && process.argv[3] != undefined) {
+	if (process.argv[2] === "spotify-this-song" && process.argv[3] != undefined) {
 		queryTerm = comboTerm;
 	}
-	else if (process.argv[2] == "spotify-this-song" && process.argv[3] == undefined) {
-		queryTerm = "The Sign, Ace of Base";
+	else if (process.argv[2] ==="spotify-this-song" && process.argv[3] == undefined) {
+		queryTerm = "Come as you are, Nirvana";
 	}
-	else if (process.argv[2] == "do-what-it-says") {
+	else if (process.argv[2] === "do-what-it-says") {
 		queryTerm = readQuery;
 	}
 
-	spotify.search({type: 'track', query: queryTerm, limit: 1}, function (err, data) {
+	spotify.search({type: 'track', query: queryTerm}, function (err, data) {
 
 		if (data.tracks.items[0] == undefined) {
 			console.log("No Song Found");
@@ -107,8 +109,51 @@ function movieQuery () {
 
 }
 
+//Bands in Town for concert, get concert info
+function bandQuery () {
+  var queryTerm;
+	var comboTerm = "";
+
+	for (var i = 3; i < process.argv.length; i++) {
+		comboTerm += process.argv[i] + " ";
+	}
+
+	if (process.argv[2] === "concert-this" && process.argv[3] != undefined) {
+		queryTerm = comboTerm;
+	}
+	else if (process.argv[2] === "concert-this" && process.argv[3] == undefined) {
+		queryTerm = "Ariana Grande";
+	}
+	else if (process.argv[2] === "do-what-it-says") {
+		queryTerm = readQuery;
+	}
+
+      var bandURL = "https://rest.bandsintown.com/artists/" + queryTerm + "/events?app_id=codingbootcamp&date=upcoming";
+
+          //Request npm call
+          request(bandURL, function (error, response, body) {
+            
+
+
+            var obj = JSON.parse(body);
+            
+            if (obj.response === false){
+              console.log("No Concert Found");
+            }
+
+            var bandMessage = "Venue: " + obj.venue + "\nWhen: " + moment(obj.datetime).format("MM/DD/YYYY, h:mm A");
+
+	        	bandMessage += divider;
+
+		        console.log(divider + bandMessage);
+            console.log('error:', error); // Print the error if one occurred
+            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+            // // console.log('body:', body); // Print the HTML for the Google homepage.
+          }); 
+
+}
+
 var readQuery;
-var fs = require("fs");
 
 function doThisWrite () {
 
@@ -122,16 +167,20 @@ function doThisWrite () {
 
 		readQuery = data[1];
 
-		if (data[0] == "spotify-this-song") {
+		if (data[0] === "spotify-this-song") {
 		 	spotifyQuery();
 		}
-		else if (data[0] == "movie-this") {
+		else if (data[0] === "movie-this") {
 		    movieQuery();
 		}
-
-	})
+    else if (data[0] === "concert-this"){
+        bandQuery();
+    }
+	});
 
 }
+
+
 
 var action = process.argv[2];
 
@@ -140,18 +189,24 @@ switch (action) {
 		spotifyQuery();
 		break;
 
-	case "movie-this":
+  case "movie-this":
 		movieQuery();
-		break;
+    break;
+    
+  case "concert-this":
+    bandQuery();
+    break;  
 
 	case "do-what-it-says":
 		doThisWrite();
 		break;
 	default:
-		console.log("Please Use a Working Command: \nmy-tweets \nspotify-this-song \nmovie-this \ndo-what-it-says");
+		console.log("Please Use a Working Command: \nspotify-this-song \nmovie-this \nconcert-this \ndo-what-it-says");
 		break;
 }
 
-//Bands in Town for concert, get concert info
 
+
+  
+  
 
